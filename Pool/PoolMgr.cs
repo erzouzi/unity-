@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 /// <summary>
 /// 缓存池里的抽屉类，包含一个父物体和一个抽屉列表
@@ -46,22 +47,24 @@ public class PoolMgr : BaseManager<PoolMgr>
     //池父物体
     private GameObject poolObj;
 
-    public GameObject GetObj(string name)
+    public void GetObj(string name,UnityAction<GameObject> callBack)
     {
-        GameObject obj = null;
         //有抽屉并且抽屉里有东西
         if (poolDic.ContainsKey(name) && poolDic[name].poolList.Count > 0)
         {
-            obj = poolDic[name].GetObj();
+            callBack(poolDic[name].GetObj());
         }
         //没有抽屉或者抽屉里没有东西
         else
         {
-            obj = GameObject.Instantiate(Resources.Load<GameObject>(name));
-            obj.name= name;
+            //异步加载，加载完成后执行回调函数
+            ResourcesMgr.Instance().LoadAsync<GameObject>(name, (obj) =>
+            {
+                obj.name = name;
+                callBack(obj);
+            });
         }
 
-        return obj;
 
     }
 
