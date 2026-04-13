@@ -73,11 +73,11 @@ public class BasePanel : MonoBehaviour
 
     public virtual void ShowMe()
     {
-        this.gameObject.SetActive(true);
+        
     }
 
     public virtual void HideMe()
     {
-        this.gameObject.SetActive(false);
+        
     }
 }
