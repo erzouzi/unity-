@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.Timeline;
 
 /// <summary>
@@ -30,7 +31,44 @@ public class UIManager : BaseManager<UIManager>
     private Transform mid;
     private Transform top;
     private Transform System;
- 
+
+    //记录我们UI的Canvas 方便以后外部可能会使用它
+    public RectTransform canvas;
+
+    public UIManager()
+    {
+        //创建Canvas让其在场景切换时不被销毁
+        GameObject obj = ResourcesMgr.Instance().Load<GameObject>("Prefabs/UI/Canvas");
+        canvas = obj.transform as RectTransform;
+        GameObject.DontDestroyOnLoad(canvas);
+
+        //找到各层级
+        bot = canvas.transform.Find("Bot");
+        mid = canvas.transform.Find("Mid");
+        top = canvas.transform.Find("Top");
+        System = canvas.transform.Find("System");
+
+        //创建EventSystem让其在场景切换时不被销毁
+        obj = ResourcesMgr.Instance().Load<GameObject>("Prefabs/UI/EventSystem");
+        GameObject.DontDestroyOnLoad(obj);
+    }
+
+    public Transform GetLayerFather(E_UI_Layer layer)
+    {
+        switch (layer)
+        {
+            case E_UI_Layer.Bot:
+                return bot;
+            case E_UI_Layer.Mid:
+                return mid;
+            case E_UI_Layer.Top:
+                return top;
+            case E_UI_Layer.System:
+                return System;
+        }
+        return null;
+    }
+
     /// <summary>
     /// 显示面板
     /// </summary>
@@ -105,6 +143,42 @@ public class UIManager : BaseManager<UIManager>
             panelDic.Remove(panelName);
         }
 
+
+    }
+
+    /// <summary>
+    /// 得到某一个已经显示的面板方便外部使用
+    /// </summary>
+    /// <param name="panelName"></param>
+    /// <param name="callBack"></param>
+    public T GetPanel<T>(string panelName) where T : BasePanel
+    {
+        if (panelDic.ContainsKey(panelName))
+        {
+            return panelDic[panelName] as T;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 给空间添加一个自定义事件监听器 方便外部使用
+    /// </summary>
+    /// <param name="control">控件对象</param>
+    /// <param name="type">事件类型</param>
+    /// <param name="callBack">事件的响应函数</param>
+    public static void AddCustomEventTriggerListener(UIBehaviour control, EventTriggerType type ,UnityAction<BaseEventData> callBack)
+    {
+
+        EventTrigger trigger = control.gameObject.GetComponent<EventTrigger>();
+        if (trigger == null)
+        {
+            trigger = control.gameObject.AddComponent<EventTrigger>();
+        }
+        EventTrigger.Entry entry = new EventTrigger.Entry();
+        entry.eventID = type;
+        entry.callback.AddListener(callBack);
+
+        trigger.triggers.Add(entry);
 
     }
 
