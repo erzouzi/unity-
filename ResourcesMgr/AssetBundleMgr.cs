@@ -8,7 +8,6 @@ public class AssetBundleMgr : BaseManager<AssetBundleMgr>
 {
     //存储加载的AB包 ，key是AB包的名字，value是AB包对象，因为AB包重复加载会报错
     Dictionary<string, AssetBundle> abDic = new Dictionary<string, AssetBundle>();
-
     //主包
     private AssetBundle mainAB = null;
     //依赖包获取用的配置文件
